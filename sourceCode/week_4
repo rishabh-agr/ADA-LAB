@@ -1,0 +1,175 @@
+// topological sort
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_VERTICES 100
+
+// Adjacency list node
+struct Node {
+    int vertex;
+    struct Node* next;
+};
+
+// Graph with adjacency list representation
+struct Graph {
+    int numVertices;
+    struct Node** adjList;
+    int* inDegree;
+};
+
+// Function to create a new node
+struct Node* createNode(int v) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = v;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a graph with 'V' vertices
+struct Graph* createGraph(int V) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->numVertices = V;
+    graph->adjList = (struct Node**)malloc(V * sizeof(struct Node*));
+    graph->inDegree = (int*)malloc(V * sizeof(int));
+
+    for (int i = 0; i < V; i++) {
+        graph->adjList[i] = NULL;
+        graph->inDegree[i] = 0;
+    }
+
+    return graph;
+}
+
+// Function to add an edge to the graph
+void addEdge(struct Graph* graph, int src, int dest) {
+    struct Node* newNode = createNode(dest);
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    graph->inDegree[dest]++;
+}
+
+// Function to perform Kahn's algorithm for topological sorting
+void topologicalSortKahn(struct Graph* graph) {
+    int V = graph->numVertices;
+    int* inDegree = graph->inDegree;
+
+    // Initialize a queue for Kahn's algorithm
+    int queue[MAX_VERTICES];
+    int front = 0, rear = 0;
+
+    // Enqueue vertices with in-degree 0
+    for (int i = 0; i < V; i++) {
+        if (inDegree[i] == 0)
+            queue[rear++] = i;
+    }
+
+    int count = 0; // Count of visited vertices
+
+    // Initialize topological order
+    int topologicalOrder[V];
+
+    while (front < rear) {
+        int u = queue[front++];
+        topologicalOrder[count++] = u;
+
+        // Iterate through all adjacent vertices of u
+        struct Node* temp = graph->adjList[u];
+        while (temp != NULL) {
+            int v = temp->vertex;
+            // Decrease in-degree of adjacent vertex
+            inDegree[v]--;
+
+            // If in-degree becomes 0, add to queue
+            if (inDegree[v] == 0)
+                queue[rear++] = v;
+
+            temp = temp->next;
+        }
+    }
+
+    // Check if there was a cycle
+    if (count != V) {
+        printf("Graph has a cycle!\n");
+        return;
+    }
+
+    // Print topological order
+    printf("Topological Sort (Kahn's Algorithm): ");
+    for (int i = 0; i < V; i++)
+        printf("%d ", topologicalOrder[i]);
+    printf("\n");
+}
+
+// Function to perform Depth-First Search (DFS)
+void DFS(struct Graph* graph, int v, int visited[], int* index, int topologicalOrder[]) {
+    visited[v] = 1;
+
+    // Recur for all the vertices adjacent to this vertex
+    struct Node* temp = graph->adjList[v];
+    while (temp != NULL) {
+        if (!visited[temp->vertex])
+            DFS(graph, temp->vertex, visited, index, topologicalOrder);
+        temp = temp->next;
+    }
+
+    // Store the vertex in the topological order
+    topologicalOrder[*index] = v;
+    (*index)--;
+}
+
+// Function to perform topological sorting using DFS
+void topologicalSortDFS(struct Graph* graph) {
+    int V = graph->numVertices;
+    int* visited = (int*)malloc(V * sizeof(int));
+    int topologicalOrder[V];
+    int index = V - 1;
+
+    // Initialize all vertices as not visited
+    for (int i = 0; i < V; i++)
+        visited[i] = 0;
+
+    // Perform DFS for each unvisited vertex
+    for (int i = 0; i < V; i++) {
+        if (!visited[i])
+            DFS(graph, i, visited, &index, topologicalOrder);
+    }
+
+    // Print topological order
+    printf("Topological Sort (DFS Algorithm): ");
+    for (int i = 0; i < V; i++)
+        printf("%d ", topologicalOrder[i]);
+    printf("\n");
+
+    free(visited);
+}
+
+// Main function
+int main() {
+    int V = 6;
+    struct Graph* graph = createGraph(V);
+
+    addEdge(graph, 5, 2);
+    addEdge(graph, 5, 0);
+    addEdge(graph, 4, 0);
+    addEdge(graph, 4, 1);
+    addEdge(graph, 2, 3);
+    addEdge(graph, 3, 1);
+
+    printf("Graph:\n");
+    for (int i = 0; i < V; i++) {
+        struct Node* temp = graph->adjList[i];
+        printf("Vertex %d: ", i);
+        while (temp != NULL) {
+            printf("%d ", temp->vertex);
+            temp = temp->next;
+        }
+        printf("\n");
+    }
+
+    topologicalSortKahn(graph);
+    topologicalSortDFS(graph);
+
+    return 0;
+}

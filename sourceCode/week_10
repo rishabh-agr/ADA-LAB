@@ -1,0 +1,195 @@
+// Kruskal's Algorithm 
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure to represent an edge in the graph
+struct Edge {
+    int src, dest, weight;
+};
+
+// Structure to represent a subset for union-find
+struct Subset {
+    int parent;
+    int rank;
+};
+
+// Function prototypes
+int find(struct Subset subsets[], int i);
+void Union(struct Subset subsets[], int x, int y);
+int compareEdges(const void* a, const void* b);
+void KruskalMST(int V, int E, struct Edge edges[]);
+
+// Function to find the root of a node
+int find(struct Subset subsets[], int i) {
+    if (subsets[i].parent != i)
+        subsets[i].parent = find(subsets, subsets[i].parent);
+    return subsets[i].parent;
+}
+
+// Function to perform union of two subsets
+void Union(struct Subset subsets[], int x, int y) {
+    int xroot = find(subsets, x);
+    int yroot = find(subsets, y);
+
+    if (subsets[xroot].rank < subsets[yroot].rank)
+        subsets[xroot].parent = yroot;
+    else if (subsets[xroot].rank > subsets[yroot].rank)
+        subsets[yroot].parent = xroot;
+    else {
+        subsets[yroot].parent = xroot;
+        subsets[xroot].rank++;
+    }
+}
+
+// Comparison function for qsort
+int compareEdges(const void* a, const void* b) {
+    struct Edge* edge1 = (struct Edge*)a;
+    struct Edge* edge2 = (struct Edge*)b;
+    return edge1->weight - edge2->weight;
+}
+
+// Function to construct and print MST using Kruskal's algorithm
+void KruskalMST(int V, int E, struct Edge edges[]) {
+    struct Edge result[V];  // To store the resultant MST
+    int e = 0;              // Index variable for result[]
+    int i = 0;              // Index variable for sorted edges
+
+    // Step 1: Sort all the edges in non-decreasing order of their weight
+    qsort(edges, E, sizeof(edges[0]), compareEdges);
+
+    // Allocate memory for creating V subsets
+    struct Subset* subsets = (struct Subset*)malloc(V * sizeof(struct Subset));
+
+    // Create V subsets with single elements
+    for (int v = 0; v < V; ++v) {
+        subsets[v].parent = v;
+        subsets[v].rank = 0;
+    }
+
+    // Number of edges to be taken is V-1
+    while (e < V - 1 && i < E) {
+        // Step 2: Pick the smallest edge. Increment index for next iteration
+        struct Edge next_edge = edges[i++];
+
+        int x = find(subsets, next_edge.src);
+        int y = find(subsets, next_edge.dest);
+
+        // If including this edge does not cause a cycle, include it
+        if (x != y) {
+            result[e++] = next_edge;
+            Union(subsets, x, y);
+        }
+    }
+
+    // Print the edges of MST
+    printf("Edges in MST:\n");
+    for (i = 0; i < e; ++i)
+        printf("%d -- %d : %d\n", result[i].src, result[i].dest, result[i].weight);
+}
+
+// Driver program to test above functions
+int main() {
+    int V, E;
+    printf("Enter number of vertices and edges: ");
+    scanf("%d %d", &V, &E);
+
+    struct Edge edges[E];
+
+    printf("Enter edges (src, dest, weight):\n");
+    for (int i = 0; i < E; ++i)
+        scanf("%d %d %d", &edges[i].src, &edges[i].dest, &edges[i].weight);
+
+    KruskalMST(V, E, edges);
+
+    return 0;
+}
+
+
+
+
+// Djistra Algorithm 
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define V 6  // Number of vertices in the graph
+
+// Function to find the vertex with the minimum distance value, from the set of vertices
+// not yet included in shortest path tree
+int minDistance(int dist[], int sptSet[]) {
+    int min = INT_MAX, min_index;
+
+    for (int v = 0; v < V; v++) {
+        if (sptSet[v] == 0 && dist[v] <= min) {
+            min = dist[v];
+            min_index = v;
+        }
+    }
+
+    return min_index;
+}
+
+// Function to print the constructed distance array
+void printSolution(int dist[]) {
+    printf("Vertex \t Distance from Source\n");
+    for (int i = 0; i < V; i++)
+        printf("%d \t %d\n", i, dist[i]);
+}
+
+// Function that implements Dijkstra's single source shortest path algorithm for a graph
+// represented using adjacency matrix representation
+void dijkstra(int graph[V][V], int src) {
+    int dist[V];     // The output array. dist[i] will hold the shortest distance from src to i
+
+    int sptSet[V];   // sptSet[i] will be 1 if vertex i is included in shortest path tree or shortest distance from src to i is finalized
+
+    // Initialize all distances as INFINITE and sptSet[] as 0
+    for (int i = 0; i < V; i++) {
+        dist[i] = INT_MAX;
+        sptSet[i] = 0;
+    }
+
+    // Distance of source vertex from itself is always 0
+    dist[src] = 0;
+
+    // Find shortest path for all vertices
+    for (int count = 0; count < V - 1; count++) {
+        // Pick the minimum distance vertex from the set of vertices not yet processed.
+        // u is always equal to src in the first iteration.
+        int u = minDistance(dist, sptSet);
+
+        // Mark the picked vertex as processed
+        sptSet[u] = 1;
+
+        // Update dist value of the adjacent vertices of the picked vertex.
+        for (int v = 0; v < V; v++) {
+            // Update dist[v] only if is not in sptSet, there is an edge from u to v,
+            // and total weight of path from src to v through u is smaller than current value of dist[v]
+            if (!sptSet[v] && graph[u][v] && dist[u] != INT_MAX && dist[u] + graph[u][v] < dist[v])
+                dist[v] = dist[u] + graph[u][v];
+        }
+    }
+
+    // Print the constructed distance array
+    printSolution(dist);
+}
+
+// Driver program to test above function
+int main() {
+    // Example graph represented using adjacency matrix
+    int graph[V][V] = {
+        {0, 4, 0, 0, 0, 0},
+        {4, 0, 8, 0, 0, 0},
+        {0, 8, 0, 7, 0, 4},
+        {0, 0, 7, 0, 9, 14},
+        {0, 0, 0, 9, 0, 10},
+        {0, 0, 4, 14, 10, 0}
+    };
+
+    dijkstra(graph, 0);  // Find shortest paths from source vertex 0
+
+    return 0;
+}
+

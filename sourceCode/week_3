@@ -1,0 +1,36 @@
+//leetcode - 897
+
+struct TreeNode *createNode(int val)
+{
+    struct TreeNode *n = malloc(sizeof(struct TreeNode));
+    n->val = val;
+    n->left = NULL;
+    n->right = NULL;
+
+    return n;
+}
+
+void fillRightTree(struct TreeNode **tree, struct TreeNode *node)
+{
+    if (!node)
+    {
+        return;
+    }
+
+    fillRightTree(tree, node->left);
+    (*tree)->right = createNode(node->val);
+    *tree = (*tree)->right;
+    fillRightTree(tree, node->right);
+}
+
+struct TreeNode* increasingBST(struct TreeNode* root) {
+    struct TreeNode *dummyRoot = createNode(0);
+    struct TreeNode *newTree = dummyRoot;
+
+    fillRightTree(&newTree, root);
+
+    struct TreeNode *rightTreeRoot = dummyRoot->right;
+    free(dummyRoot);  // Free the dummy root
+    
+    return rightTreeRoot;
+}

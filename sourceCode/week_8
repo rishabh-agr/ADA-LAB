@@ -1,0 +1,143 @@
+// heap sort Algo
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// Function to heapify a subtree rooted at index 'root'
+void heapify(int arr[], int n, int root) {
+    int largest = root;  // Initialize largest as root
+    int left = 2 * root + 1;  // Left child
+    int right = 2 * root + 2;  // Right child
+
+    // If left child is larger than root
+    if (left < n && arr[left] > arr[largest])
+        largest = left;
+
+    // If right child is larger than largest so far
+    if (right < n && arr[right] > arr[largest])
+        largest = right;
+
+    // If largest is not root
+    if (largest != root) {
+        // Swap root with largest
+        int temp = arr[root];
+        arr[root] = arr[largest];
+        arr[largest] = temp;
+
+        // Recursively heapify the affected sub-tree
+        heapify(arr, n, largest);
+    }
+}
+
+// Function to perform Heap Sort
+void heapSort(int arr[], int n) {
+    // Build heap (rearrange array)
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+
+    // One by one extract an element from heap
+    for (int i = n - 1; i > 0; i--) {
+        // Move current root to end
+        int temp = arr[0];
+        arr[0] = arr[i];
+        arr[i] = temp;
+
+        // Call max heapify on the reduced heap
+        heapify(arr, i, 0);
+    }
+}
+
+int main() {
+    int N;
+    printf("Enter number of elements: ");
+    scanf("%d", &N);
+
+    int arr[N];
+
+    printf("Enter %d integers: ", N);
+    for (int i = 0; i < N; i++)
+        scanf("%d", &arr[i]);
+
+    clock_t start_time = clock();
+
+    heapSort(arr, N);
+
+    clock_t end_time = clock();
+    double time_taken = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+    printf("Sorted array using Heap Sort: ");
+    for (int i = 0; i < N; i++)
+        printf("%d ", arr[i]);
+    printf("\n");
+
+    printf("Time taken: %f seconds\n", time_taken);
+
+    return 0;
+}
+
+
+
+
+
+// floyd's Algorithm
+
+
+
+#include <stdio.h>
+
+#define INF 99999
+#define V 4  // Number of vertices in the graph
+
+void printSolution(int dist[][V]) {
+    printf("Shortest distances between every pair of vertices:\n");
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
+            if (dist[i][j] == INF)
+                printf("%7s", "INF");
+            else
+                printf("%7d", dist[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void floydWarshall(int graph[][V]) {
+    int dist[V][V];
+
+    // Initialize distances to the input graph's distances
+    for (int i = 0; i < V; i++)
+        for (int j = 0; j < V; j++)
+            dist[i][j] = graph[i][j];
+
+    // Update distances by considering all vertices as intermediate vertex one by one
+    for (int k = 0; k < V; k++) {
+        // Pick all vertices as source one by one
+        for (int i = 0; i < V; i++) {
+            // Pick all vertices as destination for the above picked source
+            for (int j = 0; j < V; j++) {
+                // If vertex k is on the shortest path from i to j, then update the value of dist[i][j]
+                if (dist[i][k] + dist[k][j] < dist[i][j])
+                    dist[i][j] = dist[i][k] + dist[k][j];
+            }
+        }
+    }
+
+    printSolution(dist);
+}
+
+int main() {
+    int graph[V][V] = {
+        {0, INF, 3, INF},
+        {2, 0, INF, INF},
+        {INF, 7, 0, 1},
+        {6, INF, INF, 0}
+    };
+
+    floydWarshall(graph);
+
+    return 0;
+}

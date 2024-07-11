@@ -1,0 +1,174 @@
+// selection sort with timings
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// Function to swap two elements
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Function to perform Selection Sort
+void selectionSort(int arr[], int n) {
+    int i, j, min_idx;
+
+    for (i = 0; i < n - 1; i++) {
+        min_idx = i;
+        for (j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        swap(&arr[min_idx], &arr[i]);
+    }
+}
+
+// Function to generate an array of random integers
+void generateRandomArray(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        arr[i] = rand();
+}
+
+// Function to measure execution time of selectionSort
+double measureSelectionSortTime(int arr[], int n) {
+    clock_t start = clock();
+    selectionSort(arr, n);
+    clock_t end = clock();
+    return ((double)(end - start)) / CLOCKS_PER_SEC;
+}
+
+// Main function to test Selection Sort with varying input sizes
+int main() {
+    FILE *fp;
+    fp = fopen("selection_sort_time.csv", "w");
+    if (fp == NULL) {
+        printf("Error opening file.\n");
+        return 1;
+    }
+
+    fprintf(fp, "Input Size,Time Taken (seconds)\n");
+
+    // Test selection sort with various input sizes
+    for (int size = 1000; size <= 10000; size += 1000) {
+        int arr[size];
+        generateRandomArray(arr, size);
+
+        double time_taken = measureSelectionSortTime(arr, size);
+        printf("Input Size: %d, Time Taken: %f seconds\n", size, time_taken);
+
+        fprintf(fp, "%d,%f\n", size, time_taken);
+    }
+
+    fclose(fp);
+    printf("Data written to selection_sort_time.csv\n");
+
+    return 0;
+}
+
+
+
+
+// merge sort with timimngs
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// Function to merge two subarrays arr[low..mid] and arr[mid+1..high]
+void merge(int arr[], int low, int mid, int high) {
+    int n1 = mid - low + 1;
+    int n2 = high - mid;
+
+    // Create temporary arrays
+    int L[n1], R[n2];
+
+    // Copy data to temporary arrays L[] and R[]
+    for (int i = 0; i < n1; i++)
+        L[i] = arr[low + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = arr[mid + 1 + j];
+
+    // Merge the temporary arrays back into arr[low..high]
+    int i = 0, j = 0, k = low;
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    // Copy the remaining elements of L[], if any
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    // Copy the remaining elements of R[], if any
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+// Function to perform Merge Sort
+void mergeSort(int arr[], int low, int high) {
+    if (low < high) {
+        int mid = low + (high - low) / 2; // Avoids overflow for large low and high
+        mergeSort(arr, low, mid);
+        mergeSort(arr, mid + 1, high);
+        merge(arr, low, mid, high);
+    }
+}
+
+// Function to generate an array of random integers
+void generateRandomArray(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        arr[i] = rand();
+}
+
+// Function to measure execution time of mergeSort
+double measureMergeSortTime(int arr[], int n) {
+    clock_t start = clock();
+    mergeSort(arr, 0, n - 1);
+    clock_t end = clock();
+    return ((double)(end - start)) / CLOCKS_PER_SEC;
+}
+
+// Main function to test Merge Sort with varying input sizes
+int main() {
+    FILE *fp;
+    fp = fopen("merge_sort_time.csv", "w");
+    if (fp == NULL) {
+        printf("Error opening file.\n");
+        return 1;
+    }
+
+    fprintf(fp, "Input Size,Time Taken (seconds)\n");
+
+    // Test merge sort with various input sizes
+    for (int size = 1000; size <= 10000; size += 1000) {
+        int arr[size];
+        generateRandomArray(arr, size);
+
+        double time_taken = measureMergeSortTime(arr, size);
+        printf("Input Size: %d, Time Taken: %f seconds\n", size, time_taken);
+
+        fprintf(fp, "%d,%f\n", size, time_taken);
+    }
+
+    fclose(fp);
+    printf("Data written to merge_sort_time.csv\n");
+
+    return 0;
+}

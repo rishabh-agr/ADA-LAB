@@ -1,0 +1,124 @@
+// jhonson-trotter algo
+
+
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAXN 10
+
+int p[MAXN]; // p[i] holds the position of i in the permutation
+int dir[MAXN]; // dir[i] = -1 if i is mobile to the left, +1 if mobile to the right
+
+void printPermutation(int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", p[i]);
+    }
+    printf("\n");
+}
+
+int findLargestMobile(int n) {
+    int mobile = 0;
+    int mobileIndex = -1;
+
+    for (int i = 0; i < n; i++) {
+        if ((dir[i] == -1 && i > 0 && p[i] > p[i-1]) || // mobile to the left
+            (dir[i] == +1 && i < n-1 && p[i] > p[i+1])) { // mobile to the right
+            if (p[i] > mobile) {
+                mobile = p[i];
+                mobileIndex = i;
+            }
+        }
+    }
+
+    return mobileIndex;
+}
+
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void johnsonTrotter(int n) {
+    // Initialize permutation and direction arrays
+    for (int i = 0; i < n; i++) {
+        p[i] = i + 1; // Initial permutation: 1 2 3 ... n
+        dir[i] = -1; // All elements are initially mobile to the left
+    }
+
+    // Print the initial permutation
+    printPermutation(n);
+
+    // Find the largest mobile integer and swap it
+    int mobileIndex = findLargestMobile(n);
+    while (mobileIndex != -1) {
+        // Swap p[mobileIndex] with the adjacent element it is pointing to
+        int nextIndex = mobileIndex + dir[mobileIndex];
+        swap(&p[mobileIndex], &p[nextIndex]);
+
+        // Swap corresponding directions
+        swap(&dir[mobileIndex], &dir[nextIndex]);
+
+        // Print the new permutation
+        printPermutation(n);
+
+        // Update directions of elements greater than the current largest mobile integer
+        for (int i = 0; i < n; i++) {
+            if (p[i] > p[nextIndex]) {
+                dir[i] = -dir[i];
+            }
+        }
+
+        // Find the next largest mobile integer
+        mobileIndex = findLargestMobile(n);
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter the value of n (<= %d): ", MAXN);
+    scanf("%d", &n);
+
+    johnsonTrotter(n);
+
+    return 0;
+}
+
+
+
+
+
+// Brute Force String Matching Algo
+
+#include <stdio.h>
+#include <string.h>
+
+void bruteForceSubstringSearch(char *text, char *pattern) {
+    int n = strlen(text);
+    int m = strlen(pattern);
+    int i, j;
+
+    for (i = 0; i <= n - m; i++) {
+        for (j = 0; j < m; j++) {
+            if (text[i + j] != pattern[j])
+                break;
+        }
+        if (j == m) {
+            printf("Pattern found at index %d\n", i);
+        }
+    }
+}
+
+int main() {
+    char text[100], pattern[100];
+
+    printf("Enter the main text: ");
+    scanf("%s", text);
+
+    printf("Enter the pattern to search: ");
+    scanf("%s", pattern);
+
+    bruteForceSubstringSearch(text, pattern);
+
+    return 0;
+}
